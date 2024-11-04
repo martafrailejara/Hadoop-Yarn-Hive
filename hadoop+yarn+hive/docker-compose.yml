@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  namenode:
+    image: sequenceiq/hadoop-docker:2.7.1
+    container_name: hadoop-namenode
+    ports:
+      - "50070:50070"
+    environment:
+      - CLUSTER_NAME=my-cluster
+    volumes:
+      - namenode_data:/hadoop/dfs/name
+
+  datanode:
+    image: sequenceiq/hadoop-docker:2.7.1
+    container_name: hadoop-datanode
+    ports:
+      - "50075:50075"
+    environment:
+      - CLUSTER_NAME=my-cluster
+    volumes:
+      - datanode_data:/hadoop/dfs/data
+    depends_on:
+      - namenode
+
+  resourcemanager:
+    image: sequenceiq/hadoop-docker:2.7.1
+    container_name: hadoop-resourcemanager
+    ports:
+      - "8088:8088"
+    environment:
+      - CLUSTER_NAME=my-cluster
+    depends_on:
+      - namenode
+
+  nodemanager:
+    image: sequenceiq/hadoop-docker:2.7.1
+    container_name: hadoop-nodemanager
+    ports:
+      - "8042:8042"
+    environment:
+      - CLUSTER_NAME=my-cluster
+    depends_on:
+      - resourcemanager
+
+  hive:
+    image: apache/hive:3.1.2
+    container_name: hive-server
+    ports:
+      - "10000:10000"
+    environment:
+      - HIVE_METASTORE_URIS=thrift://hive-metastore:9083
+    depends_on:
+      - namenode
+
+volumes:
+  namenode_data:
+  datanode_data:
